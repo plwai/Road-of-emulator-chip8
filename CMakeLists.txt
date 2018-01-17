@@ -9,15 +9,32 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (ROEChip8_VERSION_MAJOR 0)
 set (ROEChip8_VERSION_MINOR 1)
 
+# path
+set (ROOT_PATH "${PROJECT_SOURCE_DIR}")
+set (ROECHIP8_SOURCE_PATH "${PROJECT_SOURCE_DIR}/src/ROEChip8")
+
 # config file
 configure_file ( 
-		"${PROJECT_SOURCE_DIR}/src/ROEChip8Config.h.in" 
-		"${PROJECT_BINARY_DIR/ROEChip8Config.h}"
-	)
+	"${PROJECT_SOURCE_DIR}/src/ROEChip8Config.h.in" 
+	"${PROJECT_BINARY_DIR}/ROEChip8Config.h"
+)
+
+set ( source_files
+	src/main.cpp
+
+	${ROECHIP8_SOURCE_PATH}/ROEChip8.cpp
+)
+
+set ( header_files 
+	${ROECHIP8_SOURCE_PATH}/ROEChip8.h
+)
 
 include_directories("${PROJECT_BINARY_DIR}")
 
-add_executable(ROEChip8 src/ROEChip8/ROEChip8.cc)
+add_executable(ROEChip8 ${source_files} ${header_files})
+
+add_subdirectory(src/OglSP)
+target_link_libraries(ROEChip8 OglSPLib)
 
 install (TARGETS ROEChip8 DESTINATION bin)
 install (FILES "${PROJECT_BINARY_DIR}/ROEChip8Config.h" DESTINATION include)

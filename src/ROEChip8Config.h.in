@@ -1,3 +1,5 @@
-// the configured options and settings for Tutorial
-#define Tutorial_VERSION_MAJOR @Tutorial_VERSION_MAJOR@
-#define Tutorial_VERSION_MINOR @Tutorial_VERSION_MINOR@
+// the configured options and settings for ROE_CHIP8
+#cmakedefine ROEChip8_VERSION_MAJOR @ROEChip8_VERSION_MAJOR@
+#cmakedefine ROEChip8_VERSION_MINOR @ROEChip8_VERSION_MINOR@
+
+#cmakedefine ROOT_PATH "@ROOT_PATH@"
