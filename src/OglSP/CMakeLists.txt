@@ -1,3 +1,5 @@
+project (OglSPLib)
+
 find_package(OpenGL REQUIRED)
 find_package(GLFW3 3.2 REQUIRED)
 find_package(GLM 0.9.9 REQUIRED)
@@ -10,6 +12,7 @@ find_library(LibVorbisFile NAMES libvorbisfile_static HINTS "$ENV{LIBVORBIS_DIR}
 # path
 set (OGLSP_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 set (OglSP_SOURCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/starter")
+set (OglSP_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/starter")
 set (OglSP_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/shaders")
 
 # config file
@@ -75,10 +78,10 @@ set ( module_source_files
 
 include_directories("${PROJECT_BINARY_DIR}")
 
-#source_group("Module Source" FILES ${module_source_files})
-#source_group("Shader Files" FILES ${shader_files})
+source_group("Module Source" FILES ${module_source_files})
+source_group("Shader Files" FILES ${shader_files})
 
-add_library(OglSPLib ${source_files} ${header_files} ${module_source_files})
+add_library(OglSPLib ${source_files} ${module_source_files})
 
 target_include_directories(OglSPLib PUBLIC ${OPENGL_INCLUDE_DIR})
 target_include_directories(OglSPLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/modules/glad/include")
