@@ -3,8 +3,9 @@
 
 #include <iostream>
 
-#include "OglSP\src\starter\ResourceManager.h"
-#include "OglSP\src\starter\Game.h"
+#include "ResourceManager.h"
+#include "GraphicEngine\Game.h"
+#include "ROEChip8\ROEChip8.h"
 
 void keyCallBack(GLFWwindow* window, int key, int scanCode, int action, int mode);
 void fpsCounter(int &nbFrames, double &lastTime);
@@ -13,6 +14,7 @@ const GLuint SCREEN_WIDTH = 800;
 const GLuint SCREEN_HEIGHT = 600;
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
+ROEChip8 chip8;
 
 int main(int argc, char* argv[]) {
 	// GLFW config
@@ -65,15 +67,20 @@ int main(int argc, char* argv[]) {
 
 		glfwPollEvents();
 
+		chip8.emulateCycle();
+
 		game.processInput(deltaTime);
-		game.update(deltaTime);
+		if (chip8.getDrawFlag()) {
+			game.update(deltaTime);
 
-		// Clear buffer bit
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+			// Clear buffer bit
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
 
-		game.render();
+			game.render();
 
+			
+		}
 		glfwSwapBuffers(window);
 	}
 
