@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <ROEChip8Config.h>
+
 #include "ResourceManager.h"
 #include "GraphicEngine\Game.h"
 #include "ROEChip8\ROEChip8.h"
@@ -56,6 +58,10 @@ int main(int argc, char* argv[]) {
 	// Initialize Game
 	game.init();
 	game.setState(GAME_ACTIVE);
+
+	// Load ROM
+	std::string path = ROOT_PATH;
+	chip8.loadROM(path + "/roms/INVADERS");
 
 	// Game Loop
 	while (!glfwWindowShouldClose(window)) {

@@ -51,6 +51,7 @@ class ROEChip8 {
 		// Opcode Process
 		void cpuNull();
 
+		void cpuProcessOpcode0();
 		void cpuClearScreen();
 		void cpuRetSubroutine();
 
@@ -95,9 +96,8 @@ class ROEChip8 {
 		void cpuFillV0();
 
 		// Function Table
-		void (ROEChip8::*chip8Table[17])();
-		void (ROEChip8::*chip8TableZero[17])();
-		void (ROEChip8::*chip8TableArithmetic[17])();
+		void (ROEChip8::*chip8Table[16])();
+		void (ROEChip8::*chip8TableArithmetic[16])();
 };
 
 #endif // !ROECHIP8_H

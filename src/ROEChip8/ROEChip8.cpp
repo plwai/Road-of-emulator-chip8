@@ -1,13 +1,13 @@
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
+#include <fstream>
 
 #include "ROEChip8.h"
 
 ROEChip8::ROEChip8() {
 	this->init();
 	this->generateFuncTable();
-	//(this->*chip8Table[0])();
 }
 
 ROEChip8::~ROEChip8() {
@@ -19,10 +19,53 @@ void ROEChip8::emulateCycle() {
 	this->opcode = this->memory[this->pc] << 8 | this->memory[this->pc + 1];
 
 	// Decode
+	(this->*chip8Table[(this->opcode & 0xF000) >> 12])();
+
+	// Update Timer
+	if (this->delayTimer > 0) {
+		this->delayTimer--;
+	}
+
+	if (this->soundTimer > 0) {
+		if (this->soundTimer == 1) {
+			// Play Sound
+		}
+		this->soundTimer--;
+	}
 }
 
 bool ROEChip8::loadROM(std::string romPath) {
+	std::ifstream rom;
+
+	rom.open(romPath.c_str(), std::ios::binary | std::ios::ate);
 	
+	if (rom.fail()) {
+		rom.close();
+
+		std::cout << "CHIP8::ERROR::Failed to load ROM" << std::endl;
+
+		return false;
+	}
+	else {
+		int fileSize = rom.tellg();
+		char* buffer = new char[fileSize];
+
+		// Rewind Position
+		rom.clear();
+		rom.seekg(0);
+
+		rom.read(buffer, fileSize);
+
+		for (int i = 0; i < fileSize; i++) {
+			this->memory[i + 512] = buffer[i];
+		}
+
+		delete[] buffer;
+
+		std::cout << "ROM Loaded" << std::endl;
+	}
+
+	rom.close();
 	return true;
 }
 
@@ -93,7 +136,40 @@ void ROEChip8::init() {
 }
 
 void ROEChip8::generateFuncTable() {
+	// Reset Function Pointer
+	for (int i = 0; i < 16; i++) {
+		this->chip8Table[i] = this->cpuNull;
+		this->chip8TableArithmetic[i] = this->cpuNull;
+	}
 
+	// Main Chip8 Function Pointer Table
+	this->chip8Table[0x0] = this->cpuProcessOpcode0;
+	this->chip8Table[0x1] = this->cpuJumpToAddr;
+	this->chip8Table[0x2] = this->cpuCallAddr;
+	this->chip8Table[0x3] = this->cpuSkipEqualNN;
+	this->chip8Table[0x4] = this->cpuSkipNotEqualNN;
+	this->chip8Table[0x5] = this->cpuSkipEqualVY;
+	this->chip8Table[0x6] = this->cpuSetVXNN;
+	this->chip8Table[0x7] = this->cpuAddVXNN;
+	this->chip8Table[0x8] = this->cpuArithmetic;
+	this->chip8Table[0x9] = this->cpuSkipNotEqualVy;
+	this->chip8Table[0xA] = this->cpuSetINNN;
+	this->chip8Table[0xB] = this->cpuJumpToAddrPlusV0;
+	this->chip8Table[0xC] = this->cpuRandomNum;
+	this->chip8Table[0xD] = this->cpuDraw;
+	this->chip8Table[0xE] = this->cpuProcessAlphaE;
+	this->chip8Table[0xF] = this->cpuProcessAlphaF;
+
+	// Chip8 Arithmetic Function Pointer Table
+	this->chip8TableArithmetic[0x0] = this->cpuArithmeticAssign;
+	this->chip8TableArithmetic[0x1] = this->cpuArithmeticOr;
+	this->chip8TableArithmetic[0x2] = this->cpuArithmeticAnd;
+	this->chip8TableArithmetic[0x3] = this->cpuArithmeticXor;
+	this->chip8TableArithmetic[0x4] = this->cpuArithmeticAdd;
+	this->chip8TableArithmetic[0x5] = this->cpuArithmeticMinusXY;
+	this->chip8TableArithmetic[0x6] = this->cpuArithmeticShiftRight;
+	this->chip8TableArithmetic[0x7] = this->cpuArithmeticMinusYX;
+	this->chip8TableArithmetic[0xE] = this->cpuArithmeticShiftLeft;
 }
 
 void ROEChip8::nextProgramCounter() {
@@ -106,6 +182,23 @@ void ROEChip8::cpuNull() {
 }
 
 // Opcodes Operation
+
+// 0x00E_
+void ROEChip8::cpuProcessOpcode0() {
+	switch (this->opcode & 0x000F) {
+		case 0x0000:
+			this->cpuClearScreen();
+			break;
+
+		case 0x000E:
+			this->cpuRetSubroutine();
+			break;
+
+		default:
+			this->cpuNull();
+	}
+}
+
 // 0x00E0
 void ROEChip8::cpuClearScreen() {
 	for (int i = 0; i < CHIP8_GRAPHIC_WIDTH * CHIP8_GRAPHIC_HEIGHT; i++) {
