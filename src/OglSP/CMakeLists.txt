@@ -111,8 +111,8 @@ target_link_libraries(OglSPLib ${LibOgg})
 target_link_libraries(OglSPLib ${LibVorbis})
 target_link_libraries(OglSPLib ${LibVorbisFile})
 
-install (TARGETS OglSPLib DESTINATION lib)
+#install (TARGETS OglSPLib DESTINATION lib)
 
-install (FILES "${PROJECT_BINARY_DIR}/StarterConfig.h" DESTINATION include)
-install (FILES ${header_files} DESTINATION include)
+#install (FILES "${PROJECT_BINARY_DIR}/StarterConfig.h" DESTINATION include)
+#install (FILES ${header_files} DESTINATION include)
 install (FILES ${OglSPLib_shader_files} DESTINATION resource/shaders)

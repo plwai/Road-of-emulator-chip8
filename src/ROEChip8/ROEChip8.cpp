@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <fstream>
 
+#include <Audio/AudioEngine.h>
+
 #include "ROEChip8.h"
 
 ROEChip8::ROEChip8() {
@@ -30,9 +32,14 @@ void ROEChip8::emulateCycle() {
 	if (this->soundTimer > 0) {
 		if (this->soundTimer == 1) {
 			// Play Sound
+			AudioEngine::GetInstance()->play(&this->bleepAudio, false);
 		}
 		this->soundTimer--;
 	}
+}
+
+void ROEChip8::initAudio() {
+	this->bleepAudio = AudioEngine::GetInstance()->getAudio("bleep");
 }
 
 bool ROEChip8::loadROM(std::string romPath) {

@@ -38,7 +38,18 @@ set ( Ogl_files
 	${GRAPHIC_OGL_PATH}/GameImpl.cpp
 )
 
+set (Audio_files 
+	${ROECHIP8_SOURCE_PATH}/Sound/bleep.ogg
+)
+
+set (Roms
+	${PROJECT_SOURCE_DIR}/roms/
+)
+
 include_directories("${PROJECT_BINARY_DIR}")
+
+file (COPY ${Audio_files} DESTINATION ${CMAKE_BINARY_DIR}/resource/audio)
+file (COPY ${Roms} DESTINATION ${CMAKE_BINARY_DIR}/roms)
 
 source_group("Graphics (OpenGL)" FILES ${Ogl_files})
 
@@ -48,5 +59,6 @@ add_subdirectory(src/OglSP)
 target_include_directories(ROEChip8 PUBLIC "${PROJECT_SOURCE_DIR}/src/OglSP/include")
 target_link_libraries(ROEChip8 OglSPLib)
 
-install (TARGETS ROEChip8 DESTINATION bin)
-install (FILES "${PROJECT_BINARY_DIR}/ROEChip8Config.h" DESTINATION include)
+install (TARGETS ROEChip8 DESTINATION ./)
+install (FILES ${Audio_files} DESTINATION resource/audio)
+install (DIRECTORY ${Roms} DESTINATION roms)

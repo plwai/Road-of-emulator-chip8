@@ -21,6 +21,7 @@ class ROEChip8 {
 
 		void emulateCycle();
 		bool loadROM(std::string romPath);
+		void initAudio();
 
 		// Accessors
 		bool getDrawFlag() const;
@@ -48,6 +49,7 @@ class ROEChip8 {
 
 		bool drawFlag;
 		std::map<int, int> keyMap;
+		Audio bleepAudio;
 
 		void init();
 		void generateFuncTable();

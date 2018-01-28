@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include <Audio/AudioEngine.h>
+
 #include <ROEChip8Config.h>
 
 #include "ResourceManager.h"
@@ -67,9 +69,12 @@ int main(int argc, char* argv[]) {
 	gfx.width = CHIP8_GRAPHIC_WIDTH;
 	unsigned char gfxOut[CHIP8_GRAPHIC_WIDTH * CHIP8_GRAPHIC_HEIGHT * 3] = {};
 
+	// Initialize Audio
+	AudioEngine::GetInstance()->loadAudio("./resource/audio/bleep.ogg", "bleep");
+	chip8.initAudio();
+
 	// Load ROM
-	std::string path = ROOT_PATH;
-	chip8.loadROM(path + "/roms/INVADERS");
+	chip8.loadROM("./roms/INVADERS");
 	glfwSwapBuffers(window);
 	glEnable(GL_MULTISAMPLE);
 
