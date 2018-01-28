@@ -2,6 +2,8 @@
 #define ROECHIP8_H
 
 #include <string>
+#include <map>
+#include <GLFW/glfw3.h>
 
 // Configuration
 #define CHIP8_MEMORY_SIZE 4096
@@ -22,10 +24,12 @@ class ROEChip8 {
 
 		// Accessors
 		bool getDrawFlag() const;
+		void getGFX(unsigned char* gfxOut);
 
 		// Mutators
 		void setDrawFlag(bool drawFlag);
-		void setKeys();
+		void setKeys(int key, GLboolean isPress);
+		void setKeysProcessed(int key, GLboolean isPress);
 
 	private:
 		// CHIP8 Specification BEGIN
@@ -43,9 +47,11 @@ class ROEChip8 {
 		// CHIP8 Specification END
 
 		bool drawFlag;
+		std::map<int, int> keyMap;
 
 		void init();
 		void generateFuncTable();
+		void generateKeyMap();
 		void nextProgramCounter();
 
 		// Opcode Process

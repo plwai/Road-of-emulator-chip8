@@ -8,6 +8,7 @@
 
 #include "GameImpl.h"
 #include "Audio/AudioEngine.h"
+#include "PixelObject.h"
 
 class Game {
 	public:
@@ -15,7 +16,7 @@ class Game {
 		~Game();
 		void init();
 		void processInput(GLfloat dt);
-		void update(GLfloat dt);
+		void update(GLfloat dt, GFXdata &gfx);
 		void render();
 		void clearBuffer();
 
@@ -33,10 +34,14 @@ class Game {
 
 	private:
 		GameState state;
+		GLboolean mappedKeys[16];
 		GLboolean keys[1024];
 		GLboolean keysProcessed[1024];
 		Screen screen;
+
 		ResourceManager* resMgr;
+		PixelObject* pixelObject;
+		Renderer2D* spriteRenderer;
 		Audio* BGM;
 		static GameImpl* gameImplementation;
 };

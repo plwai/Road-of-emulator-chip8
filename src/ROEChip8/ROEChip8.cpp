@@ -8,6 +8,7 @@
 ROEChip8::ROEChip8() {
 	this->init();
 	this->generateFuncTable();
+	this->generateKeyMap();
 }
 
 ROEChip8::~ROEChip8() {
@@ -73,11 +74,32 @@ bool ROEChip8::getDrawFlag() const {
 	return this->drawFlag;
 }
 
+void ROEChip8::getGFX(unsigned char* gfxOut) {
+	for (int i = 0; i < CHIP8_GRAPHIC_HEIGHT; i++) {
+		for (int j = 0; j < CHIP8_GRAPHIC_WIDTH; j++) {
+			if (gfx[i * CHIP8_GRAPHIC_WIDTH + j] == 1) {
+				gfxOut[(i * CHIP8_GRAPHIC_WIDTH + j) * 3] = 255;
+				gfxOut[(i * CHIP8_GRAPHIC_WIDTH + j) * 3 + 1] = 255;
+				gfxOut[(i * CHIP8_GRAPHIC_WIDTH + j) * 3 + 2] = 255;
+			}
+			else {
+				gfxOut[(i * CHIP8_GRAPHIC_WIDTH + j) * 3] = 0;
+				gfxOut[(i * CHIP8_GRAPHIC_WIDTH + j) * 3 + 1] = 0;
+				gfxOut[(i * CHIP8_GRAPHIC_WIDTH + j) * 3 + 2] = 0;
+			}
+		}
+	}
+}
+
 void ROEChip8::setDrawFlag(bool drawFlag) {
 	this->drawFlag = drawFlag;
 }
 
-void ROEChip8::setKeys() {
+void ROEChip8::setKeys(int key, GLboolean isPress) {
+	this->key[this->keyMap[key]] = isPress;
+}
+
+void ROEChip8::setKeysProcessed(int key, GLboolean isPress) {
 
 }
 
@@ -138,38 +160,57 @@ void ROEChip8::init() {
 void ROEChip8::generateFuncTable() {
 	// Reset Function Pointer
 	for (int i = 0; i < 16; i++) {
-		this->chip8Table[i] = this->cpuNull;
-		this->chip8TableArithmetic[i] = this->cpuNull;
+		this->chip8Table[i] = &ROEChip8::cpuNull;
+		this->chip8TableArithmetic[i] = &ROEChip8::cpuNull;
 	}
 
 	// Main Chip8 Function Pointer Table
-	this->chip8Table[0x0] = this->cpuProcessOpcode0;
-	this->chip8Table[0x1] = this->cpuJumpToAddr;
-	this->chip8Table[0x2] = this->cpuCallAddr;
-	this->chip8Table[0x3] = this->cpuSkipEqualNN;
-	this->chip8Table[0x4] = this->cpuSkipNotEqualNN;
-	this->chip8Table[0x5] = this->cpuSkipEqualVY;
-	this->chip8Table[0x6] = this->cpuSetVXNN;
-	this->chip8Table[0x7] = this->cpuAddVXNN;
-	this->chip8Table[0x8] = this->cpuArithmetic;
-	this->chip8Table[0x9] = this->cpuSkipNotEqualVy;
-	this->chip8Table[0xA] = this->cpuSetINNN;
-	this->chip8Table[0xB] = this->cpuJumpToAddrPlusV0;
-	this->chip8Table[0xC] = this->cpuRandomNum;
-	this->chip8Table[0xD] = this->cpuDraw;
-	this->chip8Table[0xE] = this->cpuProcessAlphaE;
-	this->chip8Table[0xF] = this->cpuProcessAlphaF;
+	this->chip8Table[0x0] = &ROEChip8::cpuProcessOpcode0;
+	this->chip8Table[0x1] = &ROEChip8::cpuJumpToAddr;
+	this->chip8Table[0x2] = &ROEChip8::cpuCallAddr;
+	this->chip8Table[0x3] = &ROEChip8::cpuSkipEqualNN;
+	this->chip8Table[0x4] = &ROEChip8::cpuSkipNotEqualNN;
+	this->chip8Table[0x5] = &ROEChip8::cpuSkipEqualVY;
+	this->chip8Table[0x6] = &ROEChip8::cpuSetVXNN;
+	this->chip8Table[0x7] = &ROEChip8::cpuAddVXNN;
+	this->chip8Table[0x8] = &ROEChip8::cpuArithmetic;
+	this->chip8Table[0x9] = &ROEChip8::cpuSkipNotEqualVy;
+	this->chip8Table[0xA] = &ROEChip8::cpuSetINNN;
+	this->chip8Table[0xB] = &ROEChip8::cpuJumpToAddrPlusV0;
+	this->chip8Table[0xC] = &ROEChip8::cpuRandomNum;
+	this->chip8Table[0xD] = &ROEChip8::cpuDraw;
+	this->chip8Table[0xE] = &ROEChip8::cpuProcessAlphaE;
+	this->chip8Table[0xF] = &ROEChip8::cpuProcessAlphaF;
 
 	// Chip8 Arithmetic Function Pointer Table
-	this->chip8TableArithmetic[0x0] = this->cpuArithmeticAssign;
-	this->chip8TableArithmetic[0x1] = this->cpuArithmeticOr;
-	this->chip8TableArithmetic[0x2] = this->cpuArithmeticAnd;
-	this->chip8TableArithmetic[0x3] = this->cpuArithmeticXor;
-	this->chip8TableArithmetic[0x4] = this->cpuArithmeticAdd;
-	this->chip8TableArithmetic[0x5] = this->cpuArithmeticMinusXY;
-	this->chip8TableArithmetic[0x6] = this->cpuArithmeticShiftRight;
-	this->chip8TableArithmetic[0x7] = this->cpuArithmeticMinusYX;
-	this->chip8TableArithmetic[0xE] = this->cpuArithmeticShiftLeft;
+	this->chip8TableArithmetic[0x0] = &ROEChip8::cpuArithmeticAssign;
+	this->chip8TableArithmetic[0x1] = &ROEChip8::cpuArithmeticOr;
+	this->chip8TableArithmetic[0x2] = &ROEChip8::cpuArithmeticAnd;
+	this->chip8TableArithmetic[0x3] = &ROEChip8::cpuArithmeticXor;
+	this->chip8TableArithmetic[0x4] = &ROEChip8::cpuArithmeticAdd;
+	this->chip8TableArithmetic[0x5] = &ROEChip8::cpuArithmeticMinusXY;
+	this->chip8TableArithmetic[0x6] = &ROEChip8::cpuArithmeticShiftRight;
+	this->chip8TableArithmetic[0x7] = &ROEChip8::cpuArithmeticMinusYX;
+	this->chip8TableArithmetic[0xE] = &ROEChip8::cpuArithmeticShiftLeft;
+}
+
+void ROEChip8::generateKeyMap() {
+	this->keyMap[GLFW_KEY_1] = 0x1;
+	this->keyMap[GLFW_KEY_2] = 0x2;
+	this->keyMap[GLFW_KEY_3] = 0x3;
+	this->keyMap[GLFW_KEY_Q] = 0x4;
+	this->keyMap[GLFW_KEY_W] = 0x5;
+	this->keyMap[GLFW_KEY_E] = 0x6;
+	this->keyMap[GLFW_KEY_A] = 0x7;
+	this->keyMap[GLFW_KEY_S] = 0x8;
+	this->keyMap[GLFW_KEY_D] = 0x9;
+	this->keyMap[GLFW_KEY_Z] = 0xA;
+	this->keyMap[GLFW_KEY_X] = 0x0;
+	this->keyMap[GLFW_KEY_C] = 0xB;
+	this->keyMap[GLFW_KEY_4] = 0xC;
+	this->keyMap[GLFW_KEY_R] = 0xD;
+	this->keyMap[GLFW_KEY_F] = 0xE;
+	this->keyMap[GLFW_KEY_V] = 0xF;
 }
 
 void ROEChip8::nextProgramCounter() {
@@ -231,7 +272,7 @@ void ROEChip8::cpuCallAddr() {
 
 // 0x3XNN
 void ROEChip8::cpuSkipEqualNN() {
-	if (this->V[(this->opcode & 0x0F00) >> 8] == this->opcode & 0x00FF) {
+	if (this->V[(this->opcode & 0x0F00) >> 8] == (this->opcode & 0x00FF)) {
 		this->nextProgramCounter();
 	}
 
@@ -240,7 +281,7 @@ void ROEChip8::cpuSkipEqualNN() {
 
 // 0x4XNN
 void ROEChip8::cpuSkipNotEqualNN() {
-	if (this->V[(this->opcode & 0x0F00) >> 8] != this->opcode & 0x00FF) {
+	if (this->V[(this->opcode & 0x0F00) >> 8] != (this->opcode & 0x00FF)) {
 		this->nextProgramCounter();
 	}
 
@@ -249,7 +290,7 @@ void ROEChip8::cpuSkipNotEqualNN() {
 
 // 0x5XY0
 void ROEChip8::cpuSkipEqualVY() {
-	if (this->V[(this->opcode & 0x0F00) >> 8] == this->V[(this->opcode & 0x00F0) >> 4]) {
+	if (this->V[(this->opcode & 0x0F00) >> 8] == (this->V[(this->opcode & 0x00F0) >> 4])) {
 		this->nextProgramCounter();
 	}
 
@@ -265,7 +306,7 @@ void ROEChip8::cpuSetVXNN() {
 
 // 0x7XNN
 void ROEChip8::cpuAddVXNN() {
-	this->V[(this->opcode & 0x0F00) >> 8] += this->opcode & 0x00FF;
+	this->V[(this->opcode & 0x0F00) >> 8] += (this->opcode & 0x00FF);
 
 	this->nextProgramCounter();
 }
@@ -305,69 +346,67 @@ void ROEChip8::cpuArithmeticXor() {
 
 // 0x8XY4
 void ROEChip8::cpuArithmeticAdd() {
-	this->V[(this->opcode & 0x0F00) >> 8] += this->V[(this->opcode & 0x00F0) >> 4];
-
 	if (this->V[(this->opcode & 0x00F0) >> 4] > (0xFF - this->V[(this->opcode & 0x0F00) >> 8])) {
 		this->V[0xF] = 1;
 	}
 	else {
 		this->V[0xF] = 0;
 	}
+	this->V[(this->opcode & 0x0F00) >> 8] += this->V[(this->opcode & 0x00F0) >> 4];
 
 	this->nextProgramCounter();
 }
 
 // 0x8XY5
 void ROEChip8::cpuArithmeticMinusXY() {
-	this->V[(this->opcode & 0x0F00) >> 8] -= this->V[(this->opcode & 0x00F0) >> 4];
-
-	if (this->V[(this->opcode & 0x0F00) >> 8] < this->V[(this->opcode & 0x00F0) >> 4]) {
+	if (this->V[(this->opcode & 0x0F00) >> 8] < (this->V[(this->opcode & 0x00F0) >> 4])) {
 		this->V[0xF] = 0;
 	}
 	else {
 		this->V[0xF] = 1;
 	}
+	this->V[(this->opcode & 0x0F00) >> 8] -= this->V[(this->opcode & 0x00F0) >> 4];
 
 	this->nextProgramCounter();
 }
 
 // 0x8XY6
 void ROEChip8::cpuArithmeticShiftRight() {
-	this->V[0xF] = this->V[(this->opcode & 0x00F0) >> 4] & 0x1;
+	this->V[0xF] = this->V[(this->opcode & 0x0F00) >> 8] & 0x1;
 
-	this->V[(this->opcode & 0x00F0) >> 4] = this->V[(this->opcode & 0x00F0) >> 4] >> 1;
-	this->V[(this->opcode & 0x0F00) >> 8] = this->V[(this->opcode & 0x00F0) >> 4];
+	//this->V[(this->opcode & 0x00F0) >> 4] = this->V[(this->opcode & 0x00F0) >> 4] >> 1;
+	this->V[(this->opcode & 0x0F00) >> 8] = this->V[(this->opcode & 0x0F00) >> 8] >> 1;
 
 	this->nextProgramCounter();
 }
 
 // 0x8XY7
 void ROEChip8::cpuArithmeticMinusYX() {
-	this->V[(this->opcode & 0x0F00) >> 8] = this->V[(this->opcode & 0x00F0) >> 4] - this->V[(this->opcode & 0x0F00) >> 8];
-
-	if (this->V[(this->opcode & 0x00F0) >> 4] < this->V[(this->opcode & 0x0F00) >> 8]) {
+	if (this->V[(this->opcode & 0x00F0) >> 4] < (this->V[(this->opcode & 0x0F00) >> 8])) {
 		this->V[0xF] = 0;
 	}
 	else {
 		this->V[0xF] = 1;
 	}
 
+	this->V[(this->opcode & 0x0F00) >> 8] = this->V[(this->opcode & 0x00F0) >> 4] - this->V[(this->opcode & 0x0F00) >> 8];
+
 	this->nextProgramCounter();
 }
 
 // 0x8XYE
 void ROEChip8::cpuArithmeticShiftLeft() {
-	this->V[0xF] = this->V[(this->opcode & 0x00F0) >> 4] >> 7;
+	this->V[0xF] = this->V[(this->opcode & 0x0F00) >> 8] >> 7;
 
-	this->V[(this->opcode & 0x00F0) >> 4] = this->V[(this->opcode & 0x00F0) >> 4] << 1;
-	this->V[(this->opcode & 0x0F00) >> 8] = this->V[(this->opcode & 0x00F0) >> 4];
+	//this->V[(this->opcode & 0x00F0) >> 4] = this->V[(this->opcode & 0x00F0) >> 4] << 1;
+	this->V[(this->opcode & 0x0F00) >> 8] = this->V[(this->opcode & 0x0F00) >> 8] << 1;
 
 	this->nextProgramCounter();
 }
 
 // 0x9XY0
 void ROEChip8::cpuSkipNotEqualVy() {
-	if (this->V[(this->opcode & 0x0F00) >> 8] != this->V[(this->opcode & 0x00F0) >> 4]) {
+	if (this->V[(this->opcode & 0x0F00) >> 8] != (this->V[(this->opcode & 0x00F0) >> 4])) {
 		this->nextProgramCounter();
 	}
 
@@ -543,6 +582,13 @@ void ROEChip8::cpuSetSoundTimer() {
 
 // 0xFX1E
 void ROEChip8::cpuAddVXToI() {
+	if (this->I + this->V[(this->opcode & 0x0F00) >> 8] > 0xFFF) {
+		this->V[0xF] = 1;
+	}
+	else {
+		this->V[0xF] = 0;
+	}
+
 	this->I += this->V[(this->opcode & 0x0F00) >> 8];
 
 	this->nextProgramCounter();
@@ -557,8 +603,8 @@ void ROEChip8::cpuSpriteAddr() {
 
 // 0xFX33
 void ROEChip8::cpuStoreBinary() {
-	this->memory[this->I] = this->V[(this->opcode & 0x0F00) >> 8] >> 2;
-	this->memory[this->I + 1] = (this->V[(this->opcode & 0x0F00) >> 8] >> 1) % 10;
+	this->memory[this->I] = this->V[(this->opcode & 0x0F00) >> 8] / 100;
+	this->memory[this->I + 1] = (this->V[(this->opcode & 0x0F00) >> 8] / 10) % 10;
 	this->memory[this->I + 2] = this->V[(this->opcode & 0x0F00) >> 8] % 10;
 
 	this->nextProgramCounter();
@@ -567,19 +613,17 @@ void ROEChip8::cpuStoreBinary() {
 // 0xFX55
 void ROEChip8::cpuStoreV0() {
 	for (int i = 0; i <= ((this->opcode & 0x0F00) >> 8); ++i) {
-		this->I++;
-		this->memory[this->I] = this->V[i];
+		this->memory[this->I + i] = this->V[i];
 	}
-
+	//this->I += ((this->opcode & 0x0F00) >> 8) + 1;
 	this->nextProgramCounter();
 }
 
 // 0xFX65
 void ROEChip8::cpuFillV0() {
 	for (int i = 0; i <= ((this->opcode & 0x0F00) >> 8); ++i) {
-		this->I++;
-		this->V[i] = this->memory[this->I];
+		this->V[i] = this->memory[this->I + i];
 	}
-
+	//this->I += ((this->opcode & 0x0F00) >> 8) + 1;
 	this->nextProgramCounter();
 }

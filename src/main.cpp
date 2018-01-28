@@ -1,5 +1,7 @@
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
+#include <chrono>
+#include <thread>
 
 #include <iostream>
 
@@ -12,11 +14,12 @@
 void keyCallBack(GLFWwindow* window, int key, int scanCode, int action, int mode);
 void fpsCounter(int &nbFrames, double &lastTime);
 
-const GLuint SCREEN_WIDTH = 800;
-const GLuint SCREEN_HEIGHT = 600;
+const GLuint SCREEN_WIDTH = 1280;
+const GLuint SCREEN_HEIGHT = 640;
 
 Game game(SCREEN_WIDTH, SCREEN_HEIGHT);
 ROEChip8 chip8;
+GFXdata gfx;
 
 int main(int argc, char* argv[]) {
 	// GLFW config
@@ -25,6 +28,7 @@ int main(int argc, char* argv[]) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	glfwWindowHint(GLFW_SAMPLES, 16);
 
 	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "ROEChip8", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
@@ -46,7 +50,7 @@ int main(int argc, char* argv[]) {
 	GLfloat lastFrame = 0.0f;
 
 	// V-sync 60fps
-	glfwSwapInterval(1);
+	//glfwSwapInterval(1);
 
 	// Declaration for fps counter
 	double lastTime = glfwGetTime();
@@ -59,9 +63,15 @@ int main(int argc, char* argv[]) {
 	game.init();
 	game.setState(GAME_ACTIVE);
 
+	gfx.height = CHIP8_GRAPHIC_HEIGHT;
+	gfx.width = CHIP8_GRAPHIC_WIDTH;
+	unsigned char gfxOut[CHIP8_GRAPHIC_WIDTH * CHIP8_GRAPHIC_HEIGHT * 3] = {};
+
 	// Load ROM
 	std::string path = ROOT_PATH;
 	chip8.loadROM(path + "/roms/INVADERS");
+	glfwSwapBuffers(window);
+	glEnable(GL_MULTISAMPLE);
 
 	// Game Loop
 	while (!glfwWindowShouldClose(window)) {
@@ -69,25 +79,27 @@ int main(int argc, char* argv[]) {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		fpsCounter(nbFrames, lastTime);
+		//fpsCounter(nbFrames, lastTime);
 
 		glfwPollEvents();
 
 		chip8.emulateCycle();
 
-		game.processInput(deltaTime);
 		if (chip8.getDrawFlag()) {
-			game.update(deltaTime);
+			chip8.getGFX(gfxOut);
+			gfx.gfx = gfxOut;
+			game.update(deltaTime, gfx);
 
 			// Clear buffer bit
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			game.render();
-
-			
+			chip8.setDrawFlag(false);
+			glfwSwapBuffers(window);
 		}
-		glfwSwapBuffers(window);
+		
+		std::this_thread::sleep_for(std::chrono::microseconds(2000));
 	}
 
 	// Clear resource
@@ -105,11 +117,11 @@ void keyCallBack(GLFWwindow* window, int key, int scanCode, int action, int mode
 
 	if (key >= 0 && key < 1024) {
 		if (action == GLFW_PRESS) {
-			game.setKeys(key, GL_TRUE);
+			chip8.setKeys(key, GL_TRUE);
 		}
 		else if (action == GLFW_RELEASE) {
-			game.setKeys(key, GL_FALSE);
-			game.setKeysProcessed(key, GL_FALSE);
+			chip8.setKeys(key, GL_FALSE);
+			chip8.setKeysProcessed(key, GL_FALSE);
 		}
 	}
 }

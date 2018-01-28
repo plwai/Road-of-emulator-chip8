@@ -32,6 +32,7 @@ configure_file (
 
 set ( source_files
 	${OglSPLib_SOURCE_PATH}/GameObject.cpp
+	${OglSPLib_SOURCE_PATH}/PixelObject.cpp
 	${OglSPLib_SOURCE_PATH}/ResourceManager.cpp
 	${OglSPLib_SOURCE_PATH}/ResourceImpl.cpp
 
@@ -51,6 +52,7 @@ set ( source_files
 
 set ( header_files
 	${OglSPLib_INCLUDE_DIR}/GameObject.h
+	${OglSPLib_INCLUDE_DIR}/PixelObject.h
 	${OglSPLib_INCLUDE_DIR}/ResourceManager.h
 	${OglSPLib_INCLUDE_DIR}/ResourceImpl.h
 
