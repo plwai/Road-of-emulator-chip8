@@ -1,6 +1,9 @@
 # Road-of-emulator-chip8
 Road of learning chip8 emulator
 
+## Clone Repo
+```git clone --recurse-submodules git@github.com:plwai/Road-of-emulator-chip8.git```
+
 ## Invaders
 ![alt text](https://github.com/plwai/Road-of-emulator-chip8/blob/master/screenshot/SpaceInvanders.PNG "INVADERS")
 
