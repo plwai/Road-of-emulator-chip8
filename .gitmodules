@@ -1,0 +1,3 @@
+[submodule "src/OglSP"]
+	path = src/OglSP
+	url = git@github.com:plwai/OglSP.git
